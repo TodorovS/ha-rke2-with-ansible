@@ -1,0 +1,35 @@
+- name: Create rke2 config folder
+  ansible.builtin.file:
+    path: "/etc/rancher/rke2/"
+    state: directory
+    mode: "0644"
+
+# Deploy the bootstrap config.yml only to server1
+- name: Copy bootstrap server config file to server1
+  ansible.builtin.template:
+    src: templates/rke-serv-init.j2
+    dest: "/etc/rancher/rke2/config.yaml"
+    mode: "0644"
+    owner: root
+    group: root
+  when: "inventory_hostname == 'server1'"
+
+# Deploy the server config.yml (with kube-vip IP) to server2 and 3
+- name: Copy server config file to all servers
+  ansible.builtin.template:
+    src: templates/rke-serv-conf.j2
+    dest: "/etc/rancher/rke2/config.yaml"
+    mode: "0644"
+    owner: root
+    group: root
+  when: "'servers' in group_names and inventory_hostname != 'server1'"
+
+# Copy the agent config.yml (with kube-vip IP)
+- name: Copy agent config file to all agents
+  ansible.builtin.template:
+    src: templates/rke-agent-conf.j2
+    dest: "/etc/rancher/rke2/config.yaml"
+    mode: "0644"
+    owner: root
+    group: root
+  when: "'agents' in group_names"

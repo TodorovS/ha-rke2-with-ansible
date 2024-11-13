@@ -1,0 +1,14 @@
+# Runs the RKE2 install script
+# Uses different arguments for server deploy and agent deploy
+# Check the vars folder for more info
+- name: Set the script argumants based on server or agent node
+  ansible.builtin.set_fact:
+    script_args: "{{ server_args if 'servers' in group_names else agent_args }}"
+
+- name: Run the RKE2 install script with specified arguments
+  ansible.builtin.shell:
+    cmd: "{{ script_args }} {{ script_dl_folder }}rke2_inst.sh"
+  args:
+    executable: /bin/bash
+    creates: /etc/rancher/rke2/
+  become: true

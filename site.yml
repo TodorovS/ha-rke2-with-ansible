@@ -1,0 +1,75 @@
+########################################################################
+# This script will install a HA RKE2 kubernetes cluster
+# You need 3 servers and 2 agents - 5 ubuntu machines in total
+# Machines can be bare-metal, cloud or VMs
+# Make sure SSH is allowed on the machines
+# Make sure the user have sudo privileges
+# By Default will deploy latest stable version of RKE2
+# RKE2 version can be changed in /roles/rke2-script-inst/vars/main.yml
+# RKE2 version can be changed in /roles/rke2-script-inst/vars/main.yml
+# By default will deploy kube-vip v0.8.6 as a daemonSet
+########################################################################
+
+
+########################################################################
+#        MAKE SURE YOU EDIT /group_vars/all.yml TO YOUR NEEDS!         #
+########################################################################
+
+
+---
+
+# The initial apt update & apt upgrade of all hosts
+- name: Update && Upgrade
+  hosts: all
+  gather_facts: true
+  become: true
+  roles:
+    - update-upgrade
+
+# Download RKE2 install script to all nodes
+- name: Download RKE2 install script
+  hosts: all
+  roles:
+    - rke2-script-dl
+
+# Execute RKE2 install script on servers and agent nodes
+# With the corresponding command parameters for servers and agents
+- name: Install RKE2 servers
+  hosts: all
+  roles:
+    - rke2-script-inst
+
+# Copy RKE2 config.yaml to server and agent nodes
+# Separate templates for servers and agents are included
+- name: Deploy RKE2 config.yaml
+  hosts: all
+  become: true
+  roles:
+    - rke2-config-file
+
+# Copy kube-vip manifest file to server1 for intial deployment
+- name: Copy kube-vip manifest
+  hosts: server1
+  become: true
+  roles:
+    - kube-vip-manifest
+
+# Start server1, deploy kube-vip
+- name: Bootstrap server1
+  hosts: server1
+  roles:
+    - bootstrap-serv-1
+
+# Add the rest of the servers to the control plane
+- name: Add servers
+  hosts: servers
+  roles:
+    - add-servers
+  become: true
+
+# Starts the agents and adds them to the cluster
+- name: Add agents
+  hosts: agents
+  roles:
+    - add-agents
+  become: true

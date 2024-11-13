@@ -1,0 +1,47 @@
+# This task bootstraps server1 to initialize rke2 as a single node cluster
+# Once cluslter is running, server1 deploys kube-vip
+# Once kube-vip is deployed other server and agent nodes will join
+# using the kube-vip advertised API endpoint IP
+
+- name: Start rke2 service
+  ansible.builtin.service:
+    name: rke2-server.service
+    state: restarted
+    enabled: true
+  become: true
+
+# Create a symlink for the kubectl binay to a directory
+# Which is available in $PATH for convenience
+- name: Wait for kubectl to be available in /var/lib/rancher/rke2/bin
+  ansible.builtin.wait_for:
+    path: /var/lib/rancher/rke2/bin/kubectl
+    state: present
+    timeout: 60
+
+- name: Create symlink for kubectl in /usr/local/bin
+  ansible.builtin.file:
+    src: /var/lib/rancher/rke2/bin/kubectl
+    dest: /usr/local/bin/kubectl
+    state: link
+    force: true
+  become: true
+
+# Verify control plane is up
+- name: Check if control plane is UP
+  ansible.builtin.command:
+    cmd: "kubectl --kubeconfig {{ kubeconfig_path }} get nodes -o wide"
+  register: kube_nodes_output
+  changed_when: false
+  retries: 10
+  delay: 20
+  until: "server1_ip in kube_nodes_output.stdout"
+  become: true
+
+# Kube-vip listens on port 9345 for new nodes.
+# Verify kube-vip is UP by checking port 9345
+- name: Wait for virtual IP to be available
+  ansible.builtin.wait_for:
+    host: "{{ vip_addr }}"
+    port: 9345
+    state: started
+    timeout: 300

@@ -1,0 +1,37 @@
+# server nodes
+# change to correspond to your server IPs
+# Make sure your machines have static IPs
+server1_ip: 10.10.20.201
+server2_ip: 10.10.20.202
+server3_ip: 10.10.20.203
+
+# agent nodes
+# change to correspond to your agents IPs
+# Make sure your machines have static IPs
+agent1_ip: 10.10.20.204
+agent2_ip: 10.10.20.205
+
+# kube-vip specific variables
+vip_addr: 10.10.20.200  # The kubevip IP. Change to your likings. Beware of IP conflicts with your DHCP server
+interface: "eth0"   # The host network interface to be used. See on your machines with "ip a" command
+vip_version: "v0.8.6" # The kube-vip version to deploy.
+
+# Ansible specific
+ansible_user: ubuntu
+#ansible_become: true
+#ansible_become_method: sudo
+ansible_ssh_private_key_file: /home/stanislav/.ssh/ansible # Point the path to your private SSH key
+ansible_ssh_user: ubuntu
+ansible_port: 22 # Change if using custom SSH port
+ansible_ssh_timeout: 30  # SSH timeout in seconds in case of slow connection to hosts
+
+# Optional
+# ansible_pipelining: true  # Enable pipelining for faster performance
+# ansible_forks: 5 # Number of parallel processes for faster performace
+
+# RKE2 specific
+# ADJUSTMENTS HERE ARE NOT RECOMMENDED!
+script_dl_folder: "/home/{{ ansible_user }}/rke2_download/" # path to download the rke2 install script
+kubeconfig_path: "/etc/rancher/rke2/rke2.yaml" # path to kubeconfig for executing kubectl commands 
+
+

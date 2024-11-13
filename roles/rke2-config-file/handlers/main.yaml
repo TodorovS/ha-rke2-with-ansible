@@ -1,0 +1,37 @@
+# Reconfigure server1 with the kube-vip IP
+# The handler makes sure the rke-server-init.j2 is replaced by rke-server-conf.j2
+# Thus server1 also has the kube-vip IP as control plane API endpoint address
+
+- name: Reconfigure server1
+  ansible.builtin.template:
+    src: templates/rke-serv-conf.j2
+    dest: "/etc/rancher/rke2/config.yaml"
+    mode: "0644"
+    owner: root
+    group: root
+  become: true
+  when:
+    - "inventory_hostname = 'server1'"
+    - "reconfig_server1 | default(false)" # runs only if server2 and 3 are configured with kube-vip
+
+# Restarts server1 rke process so that the new "/etc/rancher/rke2/config.yaml" is applied
+- name: Restart 'server1'
+  ansible.builtin.service:
+    name: rke2-server.service
+    state: restarted
+    enabled: true
+  become: true
+  when:
+    - inventory hostname = 'server1'
+
+# Make sure server1 joined the cluster
+- name: Verify the rest of the servers are up
+  ansible.builtin.command:
+    cmd: "kubectl --kubeconfig {{ kubeconfig_path }} get nodes -o wide"
+  register: kubectl_nodes
+  retries: 10
+  delay: 20
+  until: "{{ server1_ip }} in kubectl_nodes.stdout"
+  changed_when: false
+  become: true
+  delegate_to: server1

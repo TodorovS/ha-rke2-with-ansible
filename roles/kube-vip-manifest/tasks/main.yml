@@ -1,0 +1,21 @@
+- name: Create manifest folder
+  ansible.builtin.file:
+    path: "/var/lib/rancher/rke2/server/manifests/"
+    state: directory
+    mode: "0755"
+
+- name: Copy manifest to server#1
+  ansible.builtin.template:
+    src: templates/kube-vip-mnfst.j2
+    dest: "/var/lib/rancher/rke2/server/manifests/kube-vip.yaml"
+    mode: "0644"
+    owner: root
+    group: root
+
+- name: Copy manifest to server#1
+  ansible.builtin.template:
+    src: templates/kube-vip-rbac-mnfst.j2
+    dest: "/var/lib/rancher/rke2/server/manifests/kube-vip-rbac.yaml"
+    mode: "0644"
+    owner: root
+    group: root

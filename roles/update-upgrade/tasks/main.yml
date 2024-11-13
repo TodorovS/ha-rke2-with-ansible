@@ -1,0 +1,8 @@
+# Performs the initial apt update and apt dist-upgrade; cleans unused packages
+
+- name: Apt update && apt upgrade
+  ansible.builtin.apt:
+    update_cache: true
+    upgrade: dist
+    autoremove: true
+    clean: true

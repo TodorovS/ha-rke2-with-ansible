@@ -1,0 +1,7 @@
+token: "super-duper-secret-token"
+server: "https://{{ vip_addr }}:9345"
+tls-san:
+  - {{ vip_addr }}
+  - {{ server1_ip }}
+  - {{ server1_ip }}
+  - {{ server2_ip }}

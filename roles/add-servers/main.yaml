@@ -1,0 +1,26 @@
+# Start the rest of the server nodes to join the control plane
+- name: Add servers
+  ansible.builtin.service:
+    name: rke2-server.service
+    state: restarted
+    enabled: true
+  when: inventory_hostname != 'server1'
+
+# Wait for the control plane on server1 to register server 2 and 3 joining the cluster
+- name: Verify the rest of the servers are up
+  ansible.builtin.command:
+    cmd: "kubectl --kubeconfig {{ kubeconfig_path }} get nodes -o wide"
+  register: kubectl_nodes
+  retries: 10
+  delay: 20
+  until: "'{{ server2_ip }}' in kubectl_nodes.stdout and '{{ server3_ip }}' in kubectl_nodes.stdout"
+  changed_when: false
+  become: true
+  delegate_to: server1
+
+# Notify server1 to restart with the kube-vip control plane API IP
+- name: notify server1 reconfig
+  ansible.builtin.set_fact:
+    reconfig_server1: true
+  scope: global
+  notify: Reconfigure server1

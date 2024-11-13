@@ -1,0 +1,10 @@
+# Default install version is the newses stable version!
+# Modify the arguments of the install script as per your requirements
+# See official documentation https://docs.rke2.io/install/configuration#configuring-the-linux-installation-script
+
+server_inst: "server"
+agent_inst: "agent"
+method: "tar" # change to "rpm" in case OS is RH/CentOS/Fedora
+channel: "stable" # RKE2 release channel: stable, latest, testing, or a specific version "v1.24.3+rke2r1"
+server_args: "INSTALL_RKE2_TYPE={{ server_inst }} INSTALL_RKE2_METHOD={{ method }} INSTALL_RKE2_CHANNEL={{ channel }}"
+agent_args: "INSTALL_RKE2_TYPE={{ agent_inst }} INSTALL_RKE2_METHOD={{ method }} INSTALL_RKE2_CHANNEL={{ channel }}"

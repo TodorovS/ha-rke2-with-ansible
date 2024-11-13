@@ -1,0 +1,22 @@
+# Create folder and download RKE2 install script
+
+- name: Create folder
+  ansible.builtin.file:
+    path: "{{ script_dl_folder }}"
+    state: directory
+    mode: '0755'
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+
+- name: Download script
+  ansible.builtin.get_url:
+    url: "{{ script_dl_url }}"
+    dest: "{{ script_dl_folder }}rke2_inst.sh"
+    mode: '0750'
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+  timeout: 120
+  retries: 5
+  delay: 5
+
+# find a way to verify download is complete
